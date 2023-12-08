@@ -63,7 +63,9 @@ public class Player_Movement : MonoBehaviour
 
         controller.Move(velocity * Time.deltaTime);
 
-        //anim.SetFloat("Movement", dir.magnitude, 0.1f, Time.deltaTime);
+        anim.SetFloat("movement", dir.magnitude, 0.1f, Time.deltaTime);
+        anim.SetFloat("horizontal", moveInput.x, 0.1f, Time.deltaTime);
+        anim.SetFloat("vertical", moveInput.y, 0.1f, Time.deltaTime);
     }
 
     private void Rotate()

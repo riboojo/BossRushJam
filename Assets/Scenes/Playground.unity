@@ -1113,8 +1113,8 @@ MonoBehaviour:
     m_ActivateAfter: 0
     m_MinDuration: 0
   m_DefaultBlend:
-    m_Style: 1
-    m_Time: 10
+    m_Style: 6
+    m_Time: 2
     m_CustomCurve:
       serializedVersion: 2
       m_Curve: []
@@ -2751,11 +2751,11 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5264239468277284609}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: c5b95ecb74c88b34e8e0a68a391f84c1, type: 2}
+  m_Avatar: {fileID: 9000000, guid: 59b09743b2bd43940a6fb63c71b65de9, type: 3}
   m_Controller: {fileID: 9100000, guid: 924cc80f796bcdf45a78323612cac52a, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1

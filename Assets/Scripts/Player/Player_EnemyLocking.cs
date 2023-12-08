@@ -72,7 +72,7 @@ public class Player_EnemyLocking : MonoBehaviour
     private void FoundTarget()
     {
         lockOnCanvas.gameObject.SetActive(true);
-        //anim.SetLayerWeight(1, 1);
+        anim.SetLayerWeight(1, 1);
         cinemachineAnim.Play("TargetCamera");
         enemyLocked = true;
     }
@@ -82,7 +82,7 @@ public class Player_EnemyLocking : MonoBehaviour
         lockOnCanvas.gameObject.SetActive(false);
         currentTarget = null;
         enemyLocked = false;
-        //anim.SetLayerWeight(1, 0);
+        anim.SetLayerWeight(1, 0);
         cinemachineAnim.Play("FollowCamera");
     }
 
