@@ -40,7 +40,7 @@ public class Player_EnemyLocking : MonoBehaviour
     private void Update()
     {
         camFollow.lockedTarget = enemyLocked;
-        playerMovement.lockMovement = enemyLocked;
+        playerMovement.lockRotation = enemyLocked;
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
@@ -121,8 +121,6 @@ public class Player_EnemyLocking : MonoBehaviour
                 {
                     currentYOffset = maxVertHeight;
                 }
-
-                Debug.Log(currentYOffset);
 
                 Vector3 tarPos = closestTarget.position + new Vector3(0, currentYOffset, 0);
 

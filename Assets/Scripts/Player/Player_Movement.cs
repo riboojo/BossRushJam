@@ -7,7 +7,9 @@ public class Player_Movement : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float gravity = 25f;
     [SerializeField] private float moveSpeed = 2f;
+    [SerializeField] private float dodgeSpeed = 4f;
     [SerializeField] private float rotateSpeed = 3f;
+    [SerializeField] AnimationCurve dodgeCurve, stepbackCurve;
 
     private CharacterController controller;
     private Animator anim;
@@ -18,15 +20,24 @@ public class Player_Movement : MonoBehaviour
     private float currentSpeed;
     private float velocityY;
     private Vector3 moveInput;
-    private Vector3 dir;
+    private Vector3 direction;
 
-    public bool lockMovement;
+    private bool isDodging;
+    private float dodgeTimer, stepbackTimer;
+
+    public bool lockRotation;
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
         anim = GetComponentInChildren<Animator>();
         cam = Camera.main.transform;
+
+        Keyframe dodgeLastFrame = dodgeCurve[dodgeCurve.length - 1];
+        dodgeTimer = dodgeLastFrame.time;
+
+        Keyframe stepbackLastFrame = stepbackCurve[dodgeCurve.length - 1];
+        stepbackTimer = stepbackLastFrame.time;
     }
 
     private void Update()
@@ -34,6 +45,7 @@ public class Player_Movement : MonoBehaviour
         GetInput();
         Move();
         Rotate();
+        Dodge();
     }
 
     private void GetInput()
@@ -47,33 +59,84 @@ public class Player_Movement : MonoBehaviour
         forward.Normalize();
         right.Normalize();
 
-        dir = (forward * moveInput.y + right * moveInput.x).normalized;
+        direction = (forward * moveInput.y + right * moveInput.x).normalized;
+
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDodging && !lockRotation)
+        {
+            if (direction.magnitude != 0)
+            {
+                StartCoroutine(Dodge());
+            }
+            else
+            {
+                StartCoroutine(StepBack());
+            }
+        }
     }
 
     private void Move()
     {
-        currentSpeed = Mathf.SmoothDamp(currentSpeed, moveSpeed, ref speedSmoothVelocity, speedSmoothTime * Time.deltaTime);
-
-        if (velocityY > -10)
+        if (!isDodging)
         {
-            velocityY -= Time.deltaTime * gravity;
+            currentSpeed = Mathf.SmoothDamp(currentSpeed, moveSpeed, ref speedSmoothVelocity, speedSmoothTime * Time.deltaTime);
+
+            if (velocityY > -10)
+            {
+                velocityY -= Time.deltaTime * gravity;
+            }
+
+            Vector3 velocity = (direction * currentSpeed) + Vector3.up * velocityY;
+
+            controller.Move(velocity * Time.deltaTime);
+
+            anim.SetFloat("movement", direction.magnitude, 0.1f, Time.deltaTime);
+            anim.SetFloat("horizontal", moveInput.x, 0.1f, Time.deltaTime);
+            anim.SetFloat("vertical", moveInput.y, 0.1f, Time.deltaTime);
         }
-
-        Vector3 velocity = (dir * currentSpeed) + Vector3.up * velocityY;
-
-        controller.Move(velocity * Time.deltaTime);
-
-        anim.SetFloat("movement", dir.magnitude, 0.1f, Time.deltaTime);
-        anim.SetFloat("horizontal", moveInput.x, 0.1f, Time.deltaTime);
-        anim.SetFloat("vertical", moveInput.y, 0.1f, Time.deltaTime);
     }
 
     private void Rotate()
     {
-        if (dir.magnitude != 0 && !lockMovement)
+        if (direction.magnitude != 0 && !lockRotation)
         {
-            Vector3 rotDir = new Vector3(dir.x, dir.y, dir.z);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(rotDir), rotateSpeed * Time.deltaTime);
+            float rotationSpeed = rotateSpeed;
+            if (isDodging) rotationSpeed = rotationSpeed/2;
+            Vector3 rotDir = new Vector3(direction.x, direction.y, direction.z);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(rotDir), rotationSpeed * Time.deltaTime);
         }
+    }
+
+    private IEnumerator Dodge()
+    {
+        anim.SetTrigger("dodge");
+        isDodging = true;
+        float _timer = 0;
+
+        while (_timer < dodgeTimer)
+        {
+            float speed = dodgeCurve.Evaluate(_timer);
+            Vector3 dir = (transform.forward * speed) + Vector3.up * velocityY;
+            controller.Move(dir * Time.deltaTime);
+            _timer += Time.deltaTime;
+            yield return null;
+        }
+        isDodging = false;
+    }
+
+    private IEnumerator StepBack()
+    {
+        anim.SetTrigger("stepback");
+        isDodging = true;
+        float _timer = 0;
+
+        while (_timer < stepbackTimer)
+        {
+            float speed = stepbackCurve.Evaluate(_timer);
+            Vector3 dir = (-transform.forward * speed) + Vector3.up * velocityY;
+            controller.Move(dir * Time.deltaTime);
+            _timer += Time.deltaTime;
+            yield return null;
+        }
+        isDodging = false;
     }
 }
