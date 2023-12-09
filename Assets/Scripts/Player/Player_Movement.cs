@@ -21,8 +21,8 @@ public class Player_Movement : MonoBehaviour
     private Vector3 moveInput;
     private Vector3 direction;
 
-    private bool isRolling;
-    private float dodgeTimer, stepbackTimer;
+    private bool isRolling, isAttacking, isBlocking;
+    private float dodgeTimer, stepbackTimer, attackTimer;
 
     public bool lockRotation;
 
@@ -37,16 +37,23 @@ public class Player_Movement : MonoBehaviour
 
         Keyframe stepbackLastFrame = stepbackCurve[rollCurve.length - 1];
         stepbackTimer = stepbackLastFrame.time;
+
+        attackTimer = 1.07f;
     }
 
     private void Update()
     {
-        GetInput();
+        GetMovementInput();
+
         Move();
         Rotate();
+
+        CheckDodge();
+        CheckAttack();
+        CheckBlock();
     }
 
-    private void GetInput()
+    private void GetMovementInput()
     {
         moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
@@ -58,27 +65,11 @@ public class Player_Movement : MonoBehaviour
         right.Normalize();
 
         direction = (forward * moveInput.y + right * moveInput.x).normalized;
-
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !isRolling)
-        {
-            if (lockRotation)
-            {
-                LockedDodge();
-            }
-            else if (direction.magnitude != 0)
-            {
-                StartCoroutine(Roll());
-            }
-            else
-            {
-                StartCoroutine(StepBack());
-            }
-        }
     }
 
     private void Move()
     {
-        if (!isRolling)
+        if (!isRolling && !isAttacking && !isBlocking)
         {
             currentSpeed = Mathf.SmoothDamp(currentSpeed, moveSpeed, ref speedSmoothVelocity, speedSmoothTime * Time.deltaTime);
 
@@ -99,13 +90,56 @@ public class Player_Movement : MonoBehaviour
 
     private void Rotate()
     {
-        if (direction.magnitude != 0 && !lockRotation)
+        if (direction.magnitude != 0 && !lockRotation && !isBlocking)
         {
             float rotationSpeed = rotateSpeed;
             if (isRolling) rotationSpeed = rotationSpeed/2;
             Vector3 rotDir = new Vector3(direction.x, direction.y, direction.z);
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(rotDir), rotationSpeed * Time.deltaTime);
         }
+    }
+
+    private void CheckDodge()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !isRolling)
+        {
+            isBlocking = false;
+
+            if (lockRotation)
+            {
+                LockedDodge();
+            }
+            else if (direction.magnitude != 0)
+            {
+                StartCoroutine(Roll());
+            }
+            else
+            {
+                StartCoroutine(StepBack());
+            }
+        }
+    }
+
+    private void CheckAttack()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0) && !isRolling && !isAttacking)
+        {
+            StartCoroutine(WeakAttack());
+        }
+    }
+
+    private void CheckBlock()
+    {
+        if (Input.GetKey(KeyCode.Mouse1) && !isRolling)
+        {
+            isBlocking = true;
+        }
+        else
+        {
+            isBlocking = false;
+        }
+
+        anim.SetBool("block", isBlocking);
     }
 
     private void LockedDodge()
@@ -211,5 +245,19 @@ public class Player_Movement : MonoBehaviour
             yield return null;
         }
         isRolling = false;
+    }
+
+    private IEnumerator WeakAttack()
+    {
+        anim.SetTrigger("attack");
+        isAttacking = true;
+        float _timer = 0;
+
+        while (_timer < attackTimer)
+        {
+            _timer += Time.deltaTime;
+            yield return null;
+        }
+        isAttacking = false;
     }
 }
