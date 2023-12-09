@@ -174,9 +174,9 @@ MonoBehaviour:
     m_Bits: 128
   enemyTargetLocator: {fileID: 589012185}
   cinemachineAnim: {fileID: 976077812}
-  zeroVertLook: 0
+  limitVertHeight: 1
+  maxVertHeight: 3.2
   noticeZone: 10
-  lookAtSoothing: 0.05
   maxNoticeAngle: 60
   crossHairScale: 0.1
   camFollow: {fileID: 2133699012}
@@ -1871,7 +1871,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1860535236
 RectTransform:
   m_ObjectHideFlags: 0

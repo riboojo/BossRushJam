@@ -9,9 +9,9 @@ public class Player_EnemyLocking : MonoBehaviour
     [SerializeField] private Animator cinemachineAnim;
 
     [Header("Settings")]
-    [SerializeField] private bool zeroVertLook;
+    [SerializeField] private bool limitVertHeight;
+    [SerializeField] private float maxVertHeight = 1.6f;
     [SerializeField] private float noticeZone = 10f;
-    [SerializeField] private float lookAtSoothing = 2f;
     [SerializeField] private float maxNoticeAngle = 60f;
     [SerializeField] private float crossHairScale = 0.1f;
 
@@ -19,6 +19,7 @@ public class Player_EnemyLocking : MonoBehaviour
     [SerializeField] Transform lockOnCanvas;
 
     private Transform cam;
+    private Transform player;
     private bool enemyLocked;
     private float currentYOffset;
     private Vector3 pos;
@@ -31,6 +32,7 @@ public class Player_EnemyLocking : MonoBehaviour
     {
         playerMovement = GetComponent<Player_Movement>();
         anim = GetComponentInChildren<Animator>();
+        player = GetComponentInChildren<Transform>();
         cam = Camera.main.transform;
         lockOnCanvas.gameObject.SetActive(false);
     }
@@ -115,10 +117,12 @@ public class Player_EnemyLocking : MonoBehaviour
                 float half_h = (h / 2) / 2;
                 currentYOffset = h - half_h;
 
-                if (zeroVertLook && currentYOffset > 1.6f && currentYOffset < 1.6f * 3)
+                if (limitVertHeight && currentYOffset > maxVertHeight)
                 {
-                    currentYOffset = 1.6f;
+                    currentYOffset = maxVertHeight;
                 }
+
+                Debug.Log(currentYOffset);
 
                 Vector3 tarPos = closestTarget.position + new Vector3(0, currentYOffset, 0);
 
@@ -167,16 +171,12 @@ public class Player_EnemyLocking : MonoBehaviour
         }
         else
         {
-            //pos = currentTarget.position + new Vector3(0f, currentYOffset, 0f);
             pos = new Vector3(currentTarget.position.x, currentYOffset, currentTarget.position.z);
             lockOnCanvas.position = pos;
             lockOnCanvas.localScale = Vector3.one * ((cam.position - pos).magnitude * crossHairScale);
 
             enemyTargetLocator.position = pos;
-            Vector3 dir = currentTarget.position - transform.position;
-            dir.y = 0;
-            Quaternion rot = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Lerp(transform.rotation, rot, Time.deltaTime * lookAtSoothing);
+            player.LookAt(new Vector3(enemyTargetLocator.position.x, transform.position.y, enemyTargetLocator.position.z));
         }
     }
 
