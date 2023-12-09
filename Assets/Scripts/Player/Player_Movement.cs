@@ -7,9 +7,8 @@ public class Player_Movement : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float gravity = 25f;
     [SerializeField] private float moveSpeed = 2f;
-    [SerializeField] private float dodgeSpeed = 4f;
     [SerializeField] private float rotateSpeed = 3f;
-    [SerializeField] AnimationCurve dodgeCurve, stepbackCurve;
+    [SerializeField] AnimationCurve rollCurve, stepbackCurve;
 
     private CharacterController controller;
     private Animator anim;
@@ -22,7 +21,7 @@ public class Player_Movement : MonoBehaviour
     private Vector3 moveInput;
     private Vector3 direction;
 
-    private bool isDodging;
+    private bool isRolling;
     private float dodgeTimer, stepbackTimer;
 
     public bool lockRotation;
@@ -33,10 +32,10 @@ public class Player_Movement : MonoBehaviour
         anim = GetComponentInChildren<Animator>();
         cam = Camera.main.transform;
 
-        Keyframe dodgeLastFrame = dodgeCurve[dodgeCurve.length - 1];
-        dodgeTimer = dodgeLastFrame.time;
+        Keyframe rollLastFrame = rollCurve[rollCurve.length - 1];
+        dodgeTimer = rollLastFrame.time;
 
-        Keyframe stepbackLastFrame = stepbackCurve[dodgeCurve.length - 1];
+        Keyframe stepbackLastFrame = stepbackCurve[rollCurve.length - 1];
         stepbackTimer = stepbackLastFrame.time;
     }
 
@@ -45,7 +44,6 @@ public class Player_Movement : MonoBehaviour
         GetInput();
         Move();
         Rotate();
-        Dodge();
     }
 
     private void GetInput()
@@ -61,11 +59,15 @@ public class Player_Movement : MonoBehaviour
 
         direction = (forward * moveInput.y + right * moveInput.x).normalized;
 
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDodging && !lockRotation)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !isRolling)
         {
-            if (direction.magnitude != 0)
+            if (lockRotation)
             {
-                StartCoroutine(Dodge());
+                LockedDodge();
+            }
+            else if (direction.magnitude != 0)
+            {
+                StartCoroutine(Roll());
             }
             else
             {
@@ -76,7 +78,7 @@ public class Player_Movement : MonoBehaviour
 
     private void Move()
     {
-        if (!isDodging)
+        if (!isRolling)
         {
             currentSpeed = Mathf.SmoothDamp(currentSpeed, moveSpeed, ref speedSmoothVelocity, speedSmoothTime * Time.deltaTime);
 
@@ -100,33 +102,53 @@ public class Player_Movement : MonoBehaviour
         if (direction.magnitude != 0 && !lockRotation)
         {
             float rotationSpeed = rotateSpeed;
-            if (isDodging) rotationSpeed = rotationSpeed/2;
+            if (isRolling) rotationSpeed = rotationSpeed/2;
             Vector3 rotDir = new Vector3(direction.x, direction.y, direction.z);
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(rotDir), rotationSpeed * Time.deltaTime);
         }
     }
 
-    private IEnumerator Dodge()
+    private void LockedDodge()
     {
-        anim.SetTrigger("dodge");
-        isDodging = true;
+        if (moveInput.x > 0)
+        {
+            StartCoroutine(StepRight());
+        }
+        else if (moveInput.x < 0)
+        {
+            StartCoroutine(StepLeft());
+        }
+        else if (moveInput.y > 0)
+        {
+            StartCoroutine(StepForward());
+        }
+        else
+        {
+            StartCoroutine(StepBack());
+        }
+    }
+
+    private IEnumerator Roll()
+    {
+        anim.SetTrigger("roll");
+        isRolling = true;
         float _timer = 0;
 
         while (_timer < dodgeTimer)
         {
-            float speed = dodgeCurve.Evaluate(_timer);
+            float speed = rollCurve.Evaluate(_timer);
             Vector3 dir = (transform.forward * speed) + Vector3.up * velocityY;
             controller.Move(dir * Time.deltaTime);
             _timer += Time.deltaTime;
             yield return null;
         }
-        isDodging = false;
+        isRolling = false;
     }
 
     private IEnumerator StepBack()
     {
         anim.SetTrigger("stepback");
-        isDodging = true;
+        isRolling = true;
         float _timer = 0;
 
         while (_timer < stepbackTimer)
@@ -137,6 +159,57 @@ public class Player_Movement : MonoBehaviour
             _timer += Time.deltaTime;
             yield return null;
         }
-        isDodging = false;
+        isRolling = false;
+    }
+
+    private IEnumerator StepForward()
+    {
+        anim.SetTrigger("stepback");
+        isRolling = true;
+        float _timer = 0;
+
+        while (_timer < stepbackTimer)
+        {
+            float speed = stepbackCurve.Evaluate(_timer);
+            Vector3 dir = (transform.forward * speed) + Vector3.up * velocityY;
+            controller.Move(dir * Time.deltaTime);
+            _timer += Time.deltaTime;
+            yield return null;
+        }
+        isRolling = false;
+    }
+
+    private IEnumerator StepRight()
+    {
+        anim.SetTrigger("stepback");
+        isRolling = true;
+        float _timer = 0;
+
+        while (_timer < stepbackTimer)
+        {
+            float speed = stepbackCurve.Evaluate(_timer) * 1.2f;
+            Vector3 dir = (transform.right * speed) + Vector3.up * velocityY;
+            controller.Move(dir * Time.deltaTime);
+            _timer += Time.deltaTime;
+            yield return null;
+        }
+        isRolling = false;
+    }
+
+    private IEnumerator StepLeft()
+    {
+        anim.SetTrigger("stepback");
+        isRolling = true;
+        float _timer = 0;
+
+        while (_timer < stepbackTimer)
+        {
+            float speed = stepbackCurve.Evaluate(_timer) * 1.2f;
+            Vector3 dir = (-transform.right * speed) + Vector3.up * velocityY;
+            controller.Move(dir * Time.deltaTime);
+            _timer += Time.deltaTime;
+            yield return null;
+        }
+        isRolling = false;
     }
 }

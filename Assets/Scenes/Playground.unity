@@ -213,25 +213,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gravity: 25
   moveSpeed: 3
-  dodgeSpeed: 4
   rotateSpeed: 8
-  dodgeCurve:
+  rollCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 5
-      inSlope: 5
-      outSlope: 5
+      value: 4
+      inSlope: 3.75
+      outSlope: 3.75
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.3
-      value: 6.5
-      inSlope: -0.2777779
-      outSlope: -0.2777779
+      time: 0.4
+      value: 5.5
+      inSlope: -0.4834907
+      outSlope: -0.4834907
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -239,8 +238,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0.93
       value: 3
-      inSlope: -5.555556
-      outSlope: -5.555556
+      inSlope: -4.7169814
+      outSlope: -4.7169814
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -519,8 +518,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 533870881}
-  m_LocalRotation: {x: 0.080215566, y: 0.95510375, z: 0.22740681, w: -0.17212896}
-  m_LocalPosition: {x: -0.62519026, y: 0.70003897, z: 0.41912144}
+  m_LocalRotation: {x: 0.08021558, y: 0.9551038, z: 0.22740686, w: -0.17212899}
+  m_LocalPosition: {x: -0.6251901, y: 0.7000391, z: 0.41912144}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1515844510}
