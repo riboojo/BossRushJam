@@ -79,12 +79,11 @@ public class Player_Movement : MonoBehaviour
             }
 
             Vector3 velocity = (direction * currentSpeed) + Vector3.up * velocityY;
-
             controller.Move(velocity * Time.deltaTime);
 
             anim.SetFloat("movement", direction.magnitude, 0.1f, Time.deltaTime);
-            anim.SetFloat("horizontal", moveInput.x, 0.1f, Time.deltaTime);
-            anim.SetFloat("vertical", moveInput.y, 0.1f, Time.deltaTime);
+            anim.SetFloat("horizontal", moveInput.x, 0.0f, Time.deltaTime);
+            anim.SetFloat("vertical", moveInput.y, 0.0f, Time.deltaTime);
         }
     }
 
@@ -103,8 +102,6 @@ public class Player_Movement : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.LeftShift) && !isRolling)
         {
-            isBlocking = false;
-
             if (lockRotation)
             {
                 LockedDodge();
@@ -136,10 +133,15 @@ public class Player_Movement : MonoBehaviour
         }
         else
         {
-            isBlocking = false;
+            Invoke("StopBlockingAnimation", 0.25f);
         }
 
         anim.SetBool("block", isBlocking);
+    }
+
+    private void StopBlockingAnimation()
+    {
+        isBlocking = false;
     }
 
     private void LockedDodge()
