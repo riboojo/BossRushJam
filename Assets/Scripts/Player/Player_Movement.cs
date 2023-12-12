@@ -8,7 +8,8 @@ public class Player_Movement : MonoBehaviour
     [SerializeField] private float gravity = 25f;
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float rotateSpeed = 3f;
-    [SerializeField] AnimationCurve rollCurve, stepbackCurve;
+    [SerializeField] private LayerMask enemyLayer;
+    [SerializeField] AnimationCurve rollCurve, stepbackCurve, weakAttackCurve;
 
     private CharacterController controller;
     private Animator anim;
@@ -24,7 +25,10 @@ public class Player_Movement : MonoBehaviour
     private bool isRolling, isAttacking, isBlocking;
     private float dodgeTimer, stepbackTimer, attackTimer;
 
-    public bool lockRotation;
+    [SerializeField] float weakAttackRadius;
+    [SerializeField] float health = 100f;
+
+    public bool lockRotation, damageGiven;
 
     private void Start()
     {
@@ -35,10 +39,11 @@ public class Player_Movement : MonoBehaviour
         Keyframe rollLastFrame = rollCurve[rollCurve.length - 1];
         dodgeTimer = rollLastFrame.time;
 
-        Keyframe stepbackLastFrame = stepbackCurve[rollCurve.length - 1];
+        Keyframe stepbackLastFrame = stepbackCurve[stepbackCurve.length - 1];
         stepbackTimer = stepbackLastFrame.time;
 
-        attackTimer = 1.07f;
+        Keyframe weakAttackLastFrame = weakAttackCurve[weakAttackCurve.length - 1];
+        attackTimer = weakAttackLastFrame.time;
     }
 
     private void Update()
@@ -257,9 +262,63 @@ public class Player_Movement : MonoBehaviour
 
         while (_timer < attackTimer)
         {
+            bool hit = weakAttackCurve.Evaluate(_timer) >= 1;
+
+            if (hit && !damageGiven)
+            {
+                CheckSurroundings();
+            }
+
             _timer += Time.deltaTime;
             yield return null;
         }
+
         isAttacking = false;
+        damageGiven = false;
+    }
+
+    private void CheckSurroundings()
+    {
+        Collider[] nearbyEnemies = Physics.OverlapSphere(transform.position, weakAttackRadius, enemyLayer);
+
+        if (nearbyEnemies.Length > 0)
+        {
+            for (int i = 0; i < nearbyEnemies.Length; i++)
+            {
+                if (nearbyEnemies[i].transform.TryGetComponent(out Troll_StateMachine enemy))
+                {
+                    Vector3 directionToTarget = (nearbyEnemies[i].transform.position - transform.position).normalized;
+
+                    if (Vector3.Angle(transform.forward, directionToTarget) < 45.0f)
+                    {
+                        float distanceToTarget = Vector3.Distance(transform.position, nearbyEnemies[i].transform.position);
+                        
+                        damageGiven = true;
+                        enemy.TakeDamage(2f);
+                    }
+                }
+            }
+        }
+    }
+
+    public void TakeDamage(float damageGiven)
+    {
+        health -= damageGiven;
+        anim.SetTrigger("damage");
+
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        Debug.Log("You are dead!");
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireSphere(transform.position, weakAttackRadius);
     }
 }
