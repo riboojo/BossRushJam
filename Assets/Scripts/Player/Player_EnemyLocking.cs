@@ -39,8 +39,8 @@ public class Player_EnemyLocking : MonoBehaviour
 
     private void Update()
     {
-        camFollow.lockedTarget = enemyLocked;
-        playerMovement.lockRotation = enemyLocked;
+        //camFollow.lockedTarget = enemyLocked;
+        //playerMovement.lockRotation = enemyLocked;
 
         if (Input.GetKeyDown(KeyCode.Mouse2))
         {

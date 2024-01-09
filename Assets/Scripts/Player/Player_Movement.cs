@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Player_Movement : MonoBehaviour
 {
@@ -8,11 +9,10 @@ public class Player_Movement : MonoBehaviour
     [SerializeField] private float gravity = 25f;
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float rotateSpeed = 3f;
-    [SerializeField] private LayerMask enemyLayer;
-    [SerializeField] AnimationCurve rollCurve, stepbackCurve, weakAttackCurve;
 
+    private Player_Animations playerAnim;
+    private PlayerInput playerInput;
     private CharacterController controller;
-    private Animator anim;
     private Transform cam;
 
     private float speedSmoothVelocity;
@@ -23,58 +23,63 @@ public class Player_Movement : MonoBehaviour
     private Vector3 direction;
 
     private bool isRolling, isAttacking, isBlocking;
-    private float dodgeTimer, stepbackTimer, attackTimer;
-
-    [SerializeField] float weakAttackRadius;
-    [SerializeField] float health = 100f;
-
-    public bool lockRotation, damageGiven;
 
     private void Start()
     {
+        playerInput = GetComponent<PlayerInput>();
+        playerAnim = GetComponent<Player_Animations>();
+
         controller = GetComponent<CharacterController>();
-        anim = GetComponentInChildren<Animator>();
         cam = Camera.main.transform;
 
-        Keyframe rollLastFrame = rollCurve[rollCurve.length - 1];
-        dodgeTimer = rollLastFrame.time;
-
-        Keyframe stepbackLastFrame = stepbackCurve[stepbackCurve.length - 1];
-        stepbackTimer = stepbackLastFrame.time;
-
-        Keyframe weakAttackLastFrame = weakAttackCurve[weakAttackCurve.length - 1];
-        attackTimer = weakAttackLastFrame.time;
+        playerInput.actions["Roll"].performed += ctx => CbkDodge();
     }
 
     private void Update()
     {
         GetMovementInput();
+        GetAnimationState();
+    }
 
+    private void FixedUpdate()
+    {
         Move();
         Rotate();
-
-        CheckDodge();
-        CheckAttack();
-        CheckBlock();
     }
 
     private void GetMovementInput()
     {
-        moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        if (GetCanMove())
+        {
+            moveInput = playerInput.actions["Move"].ReadValue<Vector2>();
+            //moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")); TODO: Use new Input system
 
-        Vector3 forward = cam.forward;
-        Vector3 right = cam.right;
-        forward.y = 0;
-        right.y = 0;
-        forward.Normalize();
-        right.Normalize();
+            Vector3 forward = cam.forward;
+            Vector3 right = cam.right;
+            forward.y = 0;
+            right.y = 0;
+            forward.Normalize();
+            right.Normalize();
 
-        direction = (forward * moveInput.y + right * moveInput.x).normalized;
+            direction = (forward * moveInput.y + right * moveInput.x).normalized;
+        }
+        else
+        {
+            direction = Vector3.zero;
+            playerAnim.PlayMovement();
+        }
+    }
+
+    private void GetAnimationState()
+    {
+        isRolling = playerAnim.IsRolling();
+        isBlocking = playerAnim.IsBlocking();
+        isAttacking = playerAnim.IsAttacking();
     }
 
     private void Move()
     {
-        if (!isRolling && !isAttacking && !isBlocking)
+        if (GetCanMove())
         {
             currentSpeed = Mathf.SmoothDamp(currentSpeed, moveSpeed, ref speedSmoothVelocity, speedSmoothTime * Time.deltaTime);
 
@@ -86,239 +91,63 @@ public class Player_Movement : MonoBehaviour
             Vector3 velocity = (direction * currentSpeed) + Vector3.up * velocityY;
             controller.Move(velocity * Time.deltaTime);
 
-            anim.SetFloat("movement", direction.magnitude, 0.1f, Time.deltaTime);
-            anim.SetFloat("horizontal", moveInput.x, 0.0f, Time.deltaTime);
-            anim.SetFloat("vertical", moveInput.y, 0.0f, Time.deltaTime);
+            playerAnim.PlayMovement();
         }
     }
 
     private void Rotate()
     {
-        if (direction.magnitude != 0 && !lockRotation && !isBlocking)
+        if (GetCanRotate())
         {
-            float rotationSpeed = rotateSpeed;
-            if (isRolling) rotationSpeed = rotationSpeed/2;
             Vector3 rotDir = new Vector3(direction.x, direction.y, direction.z);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(rotDir), rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(rotDir), rotateSpeed * Time.deltaTime);
         }
     }
 
-    private void CheckDodge()
+    private void CbkDodge()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !isRolling)
+        if (direction.magnitude != 0 && !isRolling)
         {
-            if (lockRotation)
-            {
-                LockedDodge();
-            }
-            else if (direction.magnitude != 0)
-            {
-                StartCoroutine(Roll());
-            }
-            else
-            {
-                StartCoroutine(StepBack());
-            }
-        }
-    }
-
-    private void CheckAttack()
-    {
-        if (Input.GetKeyDown(KeyCode.Mouse0) && !isRolling && !isAttacking)
-        {
-            StartCoroutine(WeakAttack());
-        }
-    }
-
-    private void CheckBlock()
-    {
-        if (Input.GetKey(KeyCode.Mouse1) && !isRolling)
-        {
-            isBlocking = true;
+            playerAnim.PlayRoll();
         }
         else
         {
-            Invoke("StopBlockingAnimation", 0.25f);
+            //Stepback
         }
-
-        anim.SetBool("block", isBlocking);
     }
 
-    private void StopBlockingAnimation()
+    public void PerformMoveForRolling(float speed)
     {
-        isBlocking = false;
+        Vector3 dir = (transform.forward * speed) + Vector3.up * velocityY;
+        controller.Move(dir * Time.deltaTime);
     }
 
-    private void LockedDodge()
+    public bool GetCanMove()
     {
-        if (moveInput.x > 0)
+        if (!isRolling && !isBlocking && !isAttacking)
         {
-            StartCoroutine(StepRight());
-        }
-        else if (moveInput.x < 0)
-        {
-            StartCoroutine(StepLeft());
-        }
-        else if (moveInput.y > 0)
-        {
-            StartCoroutine(StepForward());
+            return true;
         }
         else
         {
-            StartCoroutine(StepBack());
+            return false;
         }
     }
 
-    private IEnumerator Roll()
+    public bool GetCanRotate()
     {
-        anim.SetTrigger("roll");
-        isRolling = true;
-        float _timer = 0;
-
-        while (_timer < dodgeTimer)
+        if (direction.magnitude != 0 && !isRolling && !isBlocking && !isAttacking)
         {
-            float speed = rollCurve.Evaluate(_timer);
-            Vector3 dir = (transform.forward * speed) + Vector3.up * velocityY;
-            controller.Move(dir * Time.deltaTime);
-            _timer += Time.deltaTime;
-            yield return null;
+            return true;
         }
-        isRolling = false;
-    }
-
-    private IEnumerator StepBack()
-    {
-        anim.SetTrigger("stepback");
-        isRolling = true;
-        float _timer = 0;
-
-        while (_timer < stepbackTimer)
+        else
         {
-            float speed = stepbackCurve.Evaluate(_timer);
-            Vector3 dir = (-transform.forward * speed) + Vector3.up * velocityY;
-            controller.Move(dir * Time.deltaTime);
-            _timer += Time.deltaTime;
-            yield return null;
-        }
-        isRolling = false;
-    }
-
-    private IEnumerator StepForward()
-    {
-        anim.SetTrigger("stepback");
-        isRolling = true;
-        float _timer = 0;
-
-        while (_timer < stepbackTimer)
-        {
-            float speed = stepbackCurve.Evaluate(_timer);
-            Vector3 dir = (transform.forward * speed) + Vector3.up * velocityY;
-            controller.Move(dir * Time.deltaTime);
-            _timer += Time.deltaTime;
-            yield return null;
-        }
-        isRolling = false;
-    }
-
-    private IEnumerator StepRight()
-    {
-        anim.SetTrigger("stepback");
-        isRolling = true;
-        float _timer = 0;
-
-        while (_timer < stepbackTimer)
-        {
-            float speed = stepbackCurve.Evaluate(_timer) * 1.2f;
-            Vector3 dir = (transform.right * speed) + Vector3.up * velocityY;
-            controller.Move(dir * Time.deltaTime);
-            _timer += Time.deltaTime;
-            yield return null;
-        }
-        isRolling = false;
-    }
-
-    private IEnumerator StepLeft()
-    {
-        anim.SetTrigger("stepback");
-        isRolling = true;
-        float _timer = 0;
-
-        while (_timer < stepbackTimer)
-        {
-            float speed = stepbackCurve.Evaluate(_timer) * 1.2f;
-            Vector3 dir = (-transform.right * speed) + Vector3.up * velocityY;
-            controller.Move(dir * Time.deltaTime);
-            _timer += Time.deltaTime;
-            yield return null;
-        }
-        isRolling = false;
-    }
-
-    private IEnumerator WeakAttack()
-    {
-        anim.SetTrigger("attack");
-        isAttacking = true;
-        float _timer = 0;
-
-        while (_timer < attackTimer)
-        {
-            bool hit = weakAttackCurve.Evaluate(_timer) >= 1;
-
-            if (hit && !damageGiven)
-            {
-                CheckSurroundings();
-            }
-
-            _timer += Time.deltaTime;
-            yield return null;
-        }
-
-        isAttacking = false;
-        damageGiven = false;
-    }
-
-    private void CheckSurroundings()
-    {
-        Collider[] nearbyEnemies = Physics.OverlapSphere(transform.position, weakAttackRadius, enemyLayer);
-
-        if (nearbyEnemies.Length > 0)
-        {
-            for (int i = 0; i < nearbyEnemies.Length; i++)
-            {
-                if (nearbyEnemies[i].transform.TryGetComponent(out Troll_StateMachine enemy))
-                {
-                    Vector3 directionToTarget = (nearbyEnemies[i].transform.position - transform.position).normalized;
-
-                    if (Vector3.Angle(transform.forward, directionToTarget) < 45.0f)
-                    {
-                        float distanceToTarget = Vector3.Distance(transform.position, nearbyEnemies[i].transform.position);
-                        
-                        damageGiven = true;
-                        enemy.TakeDamage(2f);
-                    }
-                }
-            }
+            return false;
         }
     }
 
-    public void TakeDamage(float damageGiven)
+    public float GetVelocity()
     {
-        health -= damageGiven;
-        anim.SetTrigger("damage");
-
-        if (health <= 0)
-        {
-            Die();
-        }
-    }
-
-    private void Die()
-    {
-        Debug.Log("You are dead!");
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawWireSphere(transform.position, weakAttackRadius);
+        return direction.magnitude;
     }
 }

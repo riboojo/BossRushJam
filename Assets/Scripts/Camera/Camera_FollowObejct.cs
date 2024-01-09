@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Camera_FollowObejct : MonoBehaviour
 {
@@ -13,13 +14,15 @@ public class Camera_FollowObejct : MonoBehaviour
     [SerializeField] private float sensitivity = 60f;
 
     private float rotX, rotY;
-    private bool cursorLocked = false;
-    private Transform cam;
+    private bool lockedTarget;
 
-    public bool lockedTarget;
+    private Transform cam;
+    private PlayerInput playerInput;
 
     private void Start()
     {
+        playerInput = GetComponent<PlayerInput>();
+
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
         cam = Camera.main.transform;
@@ -38,25 +41,13 @@ public class Camera_FollowObejct : MonoBehaviour
         {
             LookAtTarget();
         }
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (cursorLocked)
-            {
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
-            }
-            else
-            {
-                Cursor.visible = false;
-                Cursor.lockState = CursorLockMode.Locked;
-            }
-        }
     }
 
     private void CameraTargetPosition()
     {
         Vector2 mouseAxis = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+        //Vector3 _mouseAxis = playerInput.actions["View"].ReadValue<Vector2>(); // Use it if controller
+    
         rotX += (mouseAxis.x * sensitivity) * Time.deltaTime;
         rotY -= (mouseAxis.y * sensitivity) * Time.deltaTime;
 
@@ -72,5 +63,10 @@ public class Camera_FollowObejct : MonoBehaviour
         Vector3 r = cam.eulerAngles;
         rotX = r.y;
         rotY = 1.8f;
+    }
+
+    public void SetLockedState()
+    {
+        lockedTarget = true;
     }
 }
