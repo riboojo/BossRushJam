@@ -9,13 +9,20 @@ public class DummyGround_Behavior : Enemy_Behavior
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
 
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private Transform projectileInitPos;
+
     private Rigidbody2D rb;
     private Animator anim;
 
     private float jumpDistance = 250f;
     private float jumpHeight = 1500f;
 
+    private float hurtDistance = 75f;
+    private float hurtHeight = 500f;
+
     private bool isFacingLeft = true;
+    public bool isJumpAttacking = false;
 
     private void Start()
     {
@@ -33,6 +40,21 @@ public class DummyGround_Behavior : Enemy_Behavior
         else if (Input.GetKeyDown(KeyCode.O) && IsGrounded())
         {
             MacheteAttack();
+        }
+        else if (Input.GetKeyDown(KeyCode.I) && IsGrounded())
+        {
+            ProjectileAttack();
+        }
+        else if (Input.GetKeyDown(KeyCode.U) && IsGrounded())
+        {
+            FakeProjectileAttack();
+        }
+        else if (isJumpAttacking)
+        {
+            if (IsGrounded() && rb.velocity.y < 0.2f)
+            {
+                isJumpAttacking = false;
+            }
         }
         else if (IsGrounded())
         {
@@ -76,6 +98,22 @@ public class DummyGround_Behavior : Enemy_Behavior
         {
             rb.AddForce(new Vector2(-jumpDistance, jumpHeight), ForceMode2D.Impulse);
         }
+
+        isJumpAttacking = true;
+    }
+
+    public void JumpAttackHit()
+    {
+        Vector3 playerPosition = player.GetCurrentPosition();
+
+        if (playerPosition.x > transform.position.x)
+        {
+            rb.AddForce(new Vector2(-jumpDistance, jumpHeight), ForceMode2D.Impulse);
+        }
+        else
+        {
+            rb.AddForce(new Vector2(jumpDistance, jumpHeight), ForceMode2D.Impulse);
+        }
     }
 
     private void MacheteAttack()
@@ -83,17 +121,52 @@ public class DummyGround_Behavior : Enemy_Behavior
         anim.SetTrigger("SimpleMachete");
     }
 
+    private void ProjectileAttack()
+    {
+        anim.SetTrigger("Projectile");
+    }
+
+    private void FakeProjectileAttack()
+    {
+        anim.SetTrigger("FakeProjectile");
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
         {
-            Player_Behavior player = collision.gameObject.GetComponent<Player_Behavior>();
-            player.GetHurt(transform.position - collision.transform.position);
+            //Player_Behavior player = collision.gameObject.GetComponent<Player_Behavior>();
+            //player.GetHurt(transform.position - collision.transform.position, 1);
         }
+    }
+
+
+
+
+    public void CreateProjectile()
+    {
+        Vector2 direction = new Vector3(1f, 0f);
+
+        if (isFacingLeft)
+        {
+            direction.x *= -1;
+        }
+
+        GameObject projectile = Instantiate(projectilePrefab, projectileInitPos.position, Quaternion.identity);
+        projectile.GetComponent<DummyGroundProjectile>().SetDirection(direction);
     }
 
     public override void Hurt()
     {
+        Vector3 playerPosition = player.GetCurrentPosition();
 
+        if (playerPosition.x > transform.position.x)
+        {
+            rb.AddForce(new Vector2(-hurtDistance, hurtHeight), ForceMode2D.Impulse);
+        }
+        else
+        {
+            rb.AddForce(new Vector2(hurtDistance, hurtHeight), ForceMode2D.Impulse);
+        }
     }
 }

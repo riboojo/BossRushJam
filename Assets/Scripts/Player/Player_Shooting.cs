@@ -46,11 +46,6 @@ public class Player_Shooting : MonoBehaviour
         }
     }
 
-    private void Shoot(Vector3 direction)
-    {
-        
-    }
-
 
 
 

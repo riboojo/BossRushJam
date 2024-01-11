@@ -9,7 +9,7 @@ public class MacheteAttackCollision : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             Player_Behavior player = collision.gameObject.GetComponent<Player_Behavior>();
-            player.GetHurt(transform.position - collision.transform.position);
+            player.GetHurt(transform.position - collision.transform.position, 1);
         }
     }
 }

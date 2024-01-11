@@ -53,6 +53,8 @@
     <UnityVersion>2020.3.27f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Enemies\Dummy\DummyGround\MacheteAttackCollision.cs" />
+    <Compile Include="Assets\Scripts\Player\Player_Behavior.cs" />
     <Compile Include="Assets\Scripts\Objects\DummyAttackObject.cs" />
     <Compile Include="Assets\Scripts\Objects\Bullet.cs" />
     <Compile Include="Assets\Scripts\Enemies\Dummy\DummyGround\DummyGround_Behavior.cs" />
@@ -61,8 +63,13 @@
     <Compile Include="Assets\Scripts\Player\Player_Movement.cs" />
     <Compile Include="Assets\Scripts\Enemies\Dummy\DummyAir\DummyAir_Behavior.cs" />
     <Compile Include="Assets\Scripts\Player\Player_Shooting.cs" />
-    <Compile Include="Assets\Scripts\Player\Player_Behavior.cs" />
-    <Compile Include="Assets\Scripts\Enemies\Dummy\DummyGround\MacheteAttackCollision.cs" />
+    <Compile Include="Assets\Scripts\Enemies\Dummy\DummyGround\ProjectileAttack.cs" />
+    <Compile Include="Assets\Scripts\Objects\DummyGroundProjectile.cs" />
+    <Compile Include="Assets\Scripts\Player\Player_Health.cs" />
+    <Compile Include="Assets\Scripts\Player\Player_Meele.cs" />
+    <Compile Include="Assets\Scripts\Player\MeeleAttack.cs" />
+    <Compile Include="Assets\Scripts\Player\Player_Exchange.cs" />
+    <Compile Include="Assets\Scripts\Objects\Motorcycle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

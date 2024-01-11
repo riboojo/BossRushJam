@@ -79,6 +79,10 @@ public class Player_Movement : MonoBehaviour
     }
 
 
+    public bool IsFacingRight()
+    {
+        return isFacingRight;
+    }
 
     public void SetCanMove(bool can)
     {
