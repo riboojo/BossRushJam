@@ -9,7 +9,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{1DFFA11B-BF7F-6D57-BBC7-9213DABB8E42}</ProjectGuid>
+    <ProjectGuid>{76B0E6AD-98BD-DB4C-7471-8325E2CDAD74}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -53,35 +53,16 @@
     <UnityVersion>2020.3.27f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Player\Player_Movement.cs" />
-    <Compile Include="Assets\Scripts\Player\Player_Shooting.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\Button_Sprite.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\MonoBehaviours\CameraFollow.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\FunctionPeriodic.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\UI_Sprite.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\World_Bar.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Assets.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\MonoBehaviours\ComponentActions.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\UI_Bar.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\MonoBehaviours\PositionRendererSorter.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\UI_BarMultiple.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\World_Mesh.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\UtilsClass.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\CMDebug.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\Button_UI.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\FunctionUpdater.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\FunctionTimer.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\World_Sprite.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\MonoBehaviours\CameraFollowSetup.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\WeaponTracer.cs" />
-    <Compile Include="Assets\Imports\CodeMonkey\Utils\UI_TextComplex.cs" />
-    <Compile Include="Assets\Scripts\Objects\Bullet.cs" />
-    <Compile Include="Assets\Scripts\Enemies\Dummy\Dummy_Behavior.cs" />
-    <Compile Include="Assets\Scripts\Enemies\Enemy_Behavior.cs" />
     <Compile Include="Assets\Scripts\Objects\DummyAttackObject.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\Imports\CodeMonkey\README.txt" />
+    <Compile Include="Assets\Scripts\Objects\Bullet.cs" />
+    <Compile Include="Assets\Scripts\Enemies\Dummy\DummyGround\DummyGround_Behavior.cs" />
+    <Compile Include="Assets\Scripts\Enemies\Dummy\DummyGround\JumpAttackColiision.cs" />
+    <Compile Include="Assets\Scripts\Enemies\Enemy_Behavior.cs" />
+    <Compile Include="Assets\Scripts\Player\Player_Movement.cs" />
+    <Compile Include="Assets\Scripts\Enemies\Dummy\DummyAir\DummyAir_Behavior.cs" />
+    <Compile Include="Assets\Scripts\Player\Player_Shooting.cs" />
+    <Compile Include="Assets\Scripts\Player\Player_Behavior.cs" />
+    <Compile Include="Assets\Scripts\Enemies\Dummy\DummyGround\MacheteAttackCollision.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

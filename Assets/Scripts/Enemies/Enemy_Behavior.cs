@@ -15,7 +15,6 @@ public abstract class Enemy_Behavior : MonoBehaviour
     {
         health -= amount;
         healthBar.fillAmount = health / 100f;
-        Debug.Log(health);
     }
 
     public void TakeHeal(int amount)

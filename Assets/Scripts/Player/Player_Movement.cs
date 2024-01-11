@@ -16,11 +16,12 @@ public class Player_Movement : MonoBehaviour
     private float jumpPower = 16f;
 
     private bool isFacingRight = true;
+    private bool canMove = true;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        body = GameObject.FindGameObjectWithTag("Body").transform;
+        body = GameObject.FindGameObjectWithTag("PlayerBody").transform;
     }
 
     private void Update()
@@ -42,7 +43,10 @@ public class Player_Movement : MonoBehaviour
 
     private void Move()
     {
-        rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+        if (GetCanMove())
+        {
+            rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+        }
     }
 
     private void Jump()
@@ -72,5 +76,22 @@ public class Player_Movement : MonoBehaviour
             localScale.x *= -1f;
             body.localScale = localScale;
         }
+    }
+
+
+
+    public void SetCanMove(bool can)
+    {
+        canMove = can;
+    }
+
+    public bool GetCanMove()
+    {
+        return canMove;
+    }
+
+    public Vector3 GetCurrentPosition()
+    {
+        return transform.position;
     }
 }
