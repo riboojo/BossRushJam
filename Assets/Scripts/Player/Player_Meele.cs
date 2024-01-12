@@ -42,7 +42,8 @@ public class Player_Meele : MonoBehaviour
                     direction.x *= -1;
                 }
 
-                GameObject motorcycle = Instantiate(motorcyclePrefab, transform.position, Quaternion.identity);
+                Vector3 pos = new Vector3(transform.position.x + 2, transform.position.y - 1, transform.position.z);
+                GameObject motorcycle = Instantiate(motorcyclePrefab, pos, Quaternion.identity);
                 motorcycle.GetComponent<Motorcycle>().SetDirection(direction);
 
                 DeactivateSpecial();

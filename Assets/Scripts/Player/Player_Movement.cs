@@ -8,11 +8,10 @@ public class Player_Movement : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
 
     private Rigidbody2D rb;
-
-    private Transform body;
+    private Animator anim;
 
     private float horizontal = 0f;
-    private float speed = 8f;
+    private float speed = 6f;
     private float jumpPower = 16f;
 
     private bool isFacingRight = true;
@@ -21,7 +20,7 @@ public class Player_Movement : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        body = GameObject.FindGameObjectWithTag("PlayerBody").transform;
+        anim = GetComponent<Animator>();
     }
 
     private void Update()
@@ -29,6 +28,8 @@ public class Player_Movement : MonoBehaviour
         GetInputs();
         Flip();
         Jump();
+
+        UpdateAnimations();
     }
 
     private void FixedUpdate()
@@ -72,11 +73,19 @@ public class Player_Movement : MonoBehaviour
         if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f)
         {
             isFacingRight = !isFacingRight;
-            Vector3 localScale = body.transform.localScale;
+            Vector3 localScale = transform.localScale;
             localScale.x *= -1f;
-            body.localScale = localScale;
+            transform.localScale = localScale;
         }
     }
+
+    private void UpdateAnimations()
+    {
+        anim.SetFloat("velocity", Mathf.Abs(horizontal));
+    }
+
+
+
 
 
     public bool IsFacingRight()
